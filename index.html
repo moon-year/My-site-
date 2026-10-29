@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Commercial Bank of Ethiopia - Mobile Banking</title>
+  <meta name="description" content="Commercial Bank of Ethiopia Mobile Banking - Transfer money, view official electronic VAT receipts, and manage accounts securely.">
+  <meta name="theme-color" content="#7b1fa2">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #7b1fa2;
+      --primary-dark: #682067;
+      --primary-light: #f3ebf4;
+      --accent-gold: #c29b57;
+      --accent-brown: #ac7537;
+      --bg-cream: #f5f5f3;
+      --card-bg: #1e1e1e;
+      --text-dark: #1f2937;
+      --text-muted: #6b7280;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: #121212;
+      color: var(--text-dark);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .app-viewport {
+      width: 100%;
+      max-width: 440px;
+      min-height: 100vh;
+      background-color: var(--bg-cream);
+      position: relative;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Views container */
+    .view {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      width: 100%;
+    }
+
+    .view.active {
+      display: flex;
+    }
+
+    /* Utilities */
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .hidden { display: none !important; }
+
+    /* Animations */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .shake { animation: shake 0.45s ease-in-out; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeIn 0.25s ease-out forwards; }
+
+    /* Login Screen */
+    .login-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(135deg, #f2f2ef 0%, #f6f6f4 50%, #faf5fc 100%);
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding-top: 8px;
+    }
+
+    .lang-pill {
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(0,0,0,0.06);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary);
+      cursor: pointer;
+    }
+
+    .brand-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 14px;
+      margin-bottom: 24px;
+    }
+
+    .app-icon-squircle {
+      width: 105px;
+      height: 105px;
+      background: white;
+      border-radius: 30px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(0,0,0,0.05);
+      margin-bottom: 12px;
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #2d3748;
+      text-align: center;
+    }
+
+    .brand-divider {
+      width: 36px;
+      height: 2.5px;
+      background: var(--primary);
+      margin: 8px 0;
+      border-radius: 99px;
+    }
+
+    .welcome-text {
+      color: var(--primary);
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .pin-box {
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid rgba(123, 31, 162, 0.4);
+      border-radius: 18px;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      margin-bottom: 14px;
+      transition: all 0.2s;
+    }
+
+    .pin-dots {
+      flex: 1;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      font-size: 26px;
+      letter-spacing: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      color: #1a202c;
+    }
+
+    .login-btn {
+      background: var(--accent-gold);
+      color: white;
+      border: none;
+      border-radius: 9999px;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(194, 155, 87, 0.3);
+      transition: transform 0.1s, background 0.2s;
+      width: 100%;
+    }
+
+    .login-btn:active {
+      transform: scale(0.98);
+      background: #b38d4e;
+    }
+
+    .keypad {
+      background: #efefed;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      padding: 12px 16px 28px 16px;
+      margin-top: auto;
+    }
+
+    .keypad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .key-btn {
+      background: #e8e8e6;
+      border: none;
+      border-radius: 16px;
+      height: 54px;
+      font-size: 22px;
+      font-weight: 700;
+      color: #2d3748;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      user-select: none;
+      transition: all 0.1s;
+    }
+
+    .key-btn:active {
+      background: #dededb;
+      transform: scale(0.95);
+    }
+
+    /* Dashboard View */
+    .dash-header {
+      background: var(--primary);
+      color: white;
+      border-radius: 0 0 2.5rem 2.5rem;
+      padding: 20px 24px 85px 24px;
+      position: relative;
+    }
+
+    .user-greeting {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .dash-content {
+      padding: 0 18px 90px 18px;
+      margin-top: -72px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 10;
+    }
+
+    .bank-card {
+      background: #1e1e1e;
+      background-size: cover;
+      background-position: center;
+      border-radius: 24px;
+      padding: 20px;
+      color: white;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.2);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-balance-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .card-balance-text {
+      font-size: 26px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .card-acc-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 10px;
+      font-size: 13px;
+      color: #e2d09e;
+      font-weight: 600;
+    }
+
+    .quick-pill-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .quick-pill-bar {
+      width: 44px;
+      height: 5px;
+      background: var(--accent-brown);
+      border-radius: 99px;
+      margin-bottom: 12px;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      width: 100%;
+    }
+
+    .quick-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .quick-icon-box {
+      width: 54px;
+      height: 54px;
+      background: var(--primary-light);
+      border: 1px solid rgba(123, 31, 162, 0.2);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+    }
+
+    .quick-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .transfer-row-card {
+      background: white;
+      border-radius: 20px;
+      padding: 14px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+      border: 1px solid #f1f5f9;
+    }
+
+    .transfer-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: none;
+      border: none;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      cursor: pointer;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .service-card {
+      background: white;
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      border: 1px solid #f1f5f9;
+      cursor: pointer;
+    }
+
+    .service-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .recent-tx-card {
+      background: white;
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      border: 1px solid #f1f5f9;
+    }
+
+    .recent-tx-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+
+    .tx-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      cursor: pointer;
+      border-bottom: 1px solid #f8fafc;
+    }
+
+    .tx-item:last-child {
+      border-bottom: none;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: white;
+      border-radius: 24px;
+      width: 100%;
+      max-width: 420px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+      position: relative;
+    }
+
+    /* Bottom Navbar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 440px;
+      background: white;
+      border-top: 1px solid #e2e8f0;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 50;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.03);
+    }
+
+    .nav-home-pill {
+      background: #eadab9;
+      color: var(--primary);
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Form views */
+    .form-container {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1.5px solid #cbd5e1;
+      font-size: 14px;
+      color: #1e293b;
+      outline: none;
+      background: white;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-viewport">
+    
+    <!-- 1. LOGIN VIEW -->
+    <div id="view-login" class="view active login-container">
+      <div class="header-bar">
+        <button class="lang-pill">EN</button>
+      </div>
+
+      <div class="brand-section">
+        <div class="app-icon-squircle">
+          <svg viewBox="0 0 100 100" fill="none">
+            <rect width="100" height="100" rx="28" fill="#7b1fa2"/>
+            <path d="M50 15L78 32V68L50 85L22 68V32L50 15Z" fill="#F4DC96"/>
+            <path d="M50 25L70 38V62L50 75L30 62V38L50 25Z" fill="#7b1fa2"/>
+            <circle cx="50" cy="50" r="11" fill="#F4DC96"/>
+          </svg>
+        </div>
+        <h1 class="brand-title">Commercial Bank of Ethiopia</h1>
+        <div class="brand-divider"></div>
+        <h2 class="welcome-text">Welcome</h2>
+      </div>
+
+      <div style="padding: 0 10px;">
+        <div class="pin-box" id="pin-box" onclick="focusPin()">
+          <span style="color:#7b1fa2; margin-right: 12px;">🔒</span>
+          <div class="pin-dots" id="pin-display">PIN</div>
+        </div>
+        <p id="pin-error" style="color:#ef4444; font-size:12px; font-weight:700; text-align:center; min-height:18px; margin-bottom:8px;"></p>
+        <button class="login-btn" onclick="submitLogin()">Login</button>
+      </div>
+
+      <!-- Keypad -->
+      <div class="keypad">
+        <div class="keypad-grid">
+          <button class="key-btn" onclick="pressKey('1')">1</button>
+          <button class="key-btn" onclick="pressKey('2')">2</button>
+          <button class="key-btn" onclick="pressKey('3')">3</button>
+          <button class="key-btn" onclick="pressKey('4')">4</button>
+          <button class="key-btn" onclick="pressKey('5')">5</button>
+          <button class="key-btn" onclick="pressKey('6')">6</button>
+          <button class="key-btn" onclick="pressKey('7')">7</button>
+          <button class="key-btn" onclick="pressKey('8')">8</button>
+          <button class="key-btn" onclick="pressKey('9')">9</button>
+          <button class="key-btn" onclick="pressKey('back')">⌫</button>
+          <button class="key-btn" onclick="pressKey('0')">0</button>
+          <button class="key-btn" style="color:var(--primary);" onclick="submitLogin()">✓</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. DASHBOARD VIEW -->
+    <div id="view-dashboard" class="view">
+      <div class="dash-header">
+        <div class="user-greeting">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="font-size:22px; cursor:pointer;" onclick="showView('payfor')">👤</div>
+            <div>
+              <p style="font-size:11px; opacity:0.85;">Hello,</p>
+              <h3 id="dash-username" style="font-size:18px; font-weight:800; letter-spacing:0.5px;">Solomon</h3>
+            </div>
+          </div>
+          <div style="display:flex; gap:12px; align-items:center;">
+            <span style="font-size:18px; cursor:pointer;" onclick="toggleModal('history-modal')" title="Transaction History">🔔</span>
+            <span style="font-size:18px; cursor:pointer;" onclick="showView('payfor')" title="Settings">⚙️</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-content">
+        <!-- Account Card -->
+        <div class="bank-card">
+          <div class="card-top">
+            <div style="width:36px; height:36px; background:#7b1fa2; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#f4dc96; font-size:18px;">
+              🏛️
+            </div>
+            <div>
+              <h4 style="font-size:13px; font-weight:700; color:#e2d09e;">Commercial Bank of Ethiopia</h4>
+              <p style="font-size:10px; color:rgba(226, 208, 158, 0.8);">The bank you can always rely on!</p>
+            </div>
+          </div>
+
+          <div class="card-balance-row">
+            <span class="card-balance-text" id="balance-display">*** ***</span>
+            <span style="font-size:12px; font-weight:600; color:#e2d09e;">ETB</span>
+            <button onclick="toggleBalance()" style="background:none; border:none; color:#cbd5e1; font-size:16px; cursor:pointer; margin-left:6px;">👁️</button>
+          </div>
+
+          <div class="card-acc-row">
+            <span>Saving Account 1********2766</span>
+            <span onclick="copyAcc()" style="cursor:pointer;" title="Copy">📋</span>
+          </div>
+
+          <div style="font-size:10px; color:#94a3b8; text-align:center;" id="live-time-dash">
+            --
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-pill-row">
+          <div class="quick-pill-bar"></div>
+          <div class="quick-grid">
+            <div class="quick-item" onclick="alert('CBE Feedback')">
+              <div class="quick-icon-box">💬</div>
+              <span class="quick-label">Feedback</span>
+            </div>
+            <div class="quick-item" onclick="alert('CBE Bill-Share')">
+              <div class="quick-icon-box">🔄</div>
+              <span class="quick-label">Bill-Share</span>
+            </div>
+            <div class="quick-item" onclick="toggleModal('history-modal')">
+              <div class="quick-icon-box">📜</div>
+              <span class="quick-label">History</span>
+            </div>
+            <div class="quick-item" onclick="openReceipt()">
+              <div class="quick-icon-box">🧾</div>
+              <span class="quick-label">Receipt</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transfer / Receive Row -->
+        <div class="transfer-row-card">
+          <button class="transfer-btn" onclick="showView('transfer')">
+            <span style="background:#fee2e2; color:#ef4444; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center;">⇄</span>
+            <span>CBE Transfer</span>
+          </button>
+          <div style="width:1px; height:22px; background:#e2e8f0;"></div>
+          <button class="transfer-btn" onclick="alert('Your Account 100027663828 is ready')">
+            <span style="background:#dcfce7; color:#16a34a; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center;">↙</span>
+            <span>Receive</span>
+          </button>
+        </div>
+
+        <!-- Services Grid -->
+        <div class="services-grid">
+          <div class="service-card" onclick="alert('Ethio Telecom Airtime')">
+            <span style="color:var(--primary); font-size:20px;">📞</span>
+            <span class="service-title">Airtime</span>
+          </div>
+          <div class="service-card" onclick="showView('transfer')">
+            <span style="color:var(--primary); font-size:20px;">🔁</span>
+            <span class="service-title">Other Transfers</span>
+          </div>
+          <div class="service-card" onclick="alert('CBEBirr Wallet linked')">
+            <span style="color:var(--primary); font-size:20px;">👛</span>
+            <span class="service-title">CBEBirr</span>
+          </div>
+          <div class="service-card" onclick="alert('Water, Electricity & DSTV')">
+            <span style="color:var(--primary); font-size:20px;">💳</span>
+            <span class="service-title">Bills & Utilities</span>
+          </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="recent-tx-card">
+          <div class="recent-tx-header">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="color:var(--primary); font-size:14px;">📈</span>
+              <h4 style="font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;">Recent Transactions</h4>
+            </div>
+            <button onclick="toggleModal('history-modal')" style="background:none; border:none; color:var(--primary); font-size:11px; font-weight:700; cursor:pointer;">
+              See All History →
+            </button>
+          </div>
+
+          <div id="recent-tx-list"></div>
+        </div>
+      </div>
+
+      <!-- Sticky Bottom Navigation -->
+      <div class="bottom-nav">
+        <button class="nav-home-pill" onclick="showView('dashboard')">
+          <span>🏠</span>
+          <span>Home</span>
+        </button>
+        <button style="background:none; border:none; font-size:20px; color:var(--primary); cursor:pointer;" onclick="toggleModal('history-modal')" title="History">
+          📊
+        </button>
+        <button style="background:none; border:none; font-size:20px; color:var(--primary); cursor:pointer;" onclick="showView('payfor')" title="Settings">
+          👤
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. TRANSFER VIEW -->
+    <div id="view-transfer" class="view">
+      <div style="background:var(--primary); color:white; padding:16px; display:flex; align-items:center; gap:12px;">
+        <button onclick="showView('dashboard')" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">←</button>
+        <h3 style="font-size:16px; font-weight:800;">CBE to CBE Transfer</h3>
+      </div>
+      <div class="form-container">
+        <div class="form-group">
+          <label class="form-label">Recipient Account Number</label>
+          <input type="text" id="tx-acc" class="form-input mono" placeholder="1000XXXXXXXX" value="1000403184717">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Recipient Full Name</label>
+          <input type="text" id="tx-name" class="form-input" placeholder="Enter Full Name" value="SOLOMON GEZAHEGN SISAY">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount (ETB)</label>
+          <input type="number" id="tx-amount" class="form-input mono" placeholder="0.00" value="1500.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reason / Narrative</label>
+          <input type="text" id="tx-reason" class="form-input" placeholder="e.g. MB transfer" value="MB transfer">
+        </div>
+        <button class="login-btn" style="margin-top:auto;" onclick="completeTransfer()">
+          Confirm & Transfer
+        </button>
+      </div>
+    </div>
+
+    <!-- 4. PROFILE / PAY FOR VIEW -->
+    <div id="view-payfor" class="view">
+      <div style="background:var(--primary); color:white; padding:16px; display:flex; align-items:center; gap:12px;">
+        <button onclick="showView('dashboard')" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">←</button>
+        <h3 style="font-size:16px; font-weight:800;">Sender & Profile Settings</h3>
+      </div>
+      <div class="form-container">
+        <div class="form-group">
+          <label class="form-label">Sender Account Name</label>
+          <input type="text" id="set-sender-name" class="form-input" value="ABEBE KASAHUN FISHA">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sender Account Number</label>
+          <input type="text" class="form-input mono" value="100027663828" disabled>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Default Recipient Name</label>
+          <input type="text" id="set-receiver-name" class="form-input" value="SOLOMON GEZAHEGN SISAY">
+        </div>
+        <button class="login-btn" onclick="saveSettings()" style="margin-top:10px;">
+          Save Changes
+        </button>
+      </div>
+    </div>
+
+    <!-- MODAL: TRANSACTION HISTORY -->
+    <div id="history-modal" class="modal-overlay">
+      <div class="modal-card">
+        <div style="background:var(--primary); color:white; padding:18px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h3 style="font-size:16px; font-weight:800;">Transaction History</h3>
+            <p style="font-size:11px; opacity:0.8;">Complete records with official receipts</p>
+          </div>
+          <button onclick="toggleModal('history-modal')" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">✕</button>
+        </div>
+        <div style="padding:16px;" id="modal-history-list"></div>
+      </div>
+    </div>
+
+    <!-- MODAL: OFFICIAL CBE RECEIPT -->
+    <div id="receipt-modal" class="modal-overlay">
+      <div class="modal-card" style="padding:0; max-width:440px;">
+        <div style="background:#7b1fa2; color:white; padding:14px 18px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:13px; font-weight:800; letter-spacing:0.5px;">Official CBE Electronic VAT Receipt</span>
+          <button onclick="toggleModal('receipt-modal')" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">✕</button>
+        </div>
+        <div id="receipt-body" style="padding:16px; background:#fff; font-size:11px; line-height:1.5;"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // State
+    let currentPin = '';
+    const VALID_PIN = '88556';
+    let showBal = false;
+    let senderName = localStorage.getItem('cbe_sender_name') || 'ABEBE KASAHUN FISHA';
+    let receiverName = localStorage.getItem('cbe_receiver_name') || 'SOLOMON GEZAHEGN SISAY';
+
+    let transactions = [
+      {
+        id: 'tx-1',
+        type: 'debit',
+        title: 'Transfer to Zeyneba Meki',
+        account: '1000403184717',
+        amount: 1500.00,
+        ref: 'FT26153CPSKX',
+        reason: 'MB transfer'
+      },
+      {
+        id: 'tx-2',
+        type: 'credit',
+        title: 'Salary Deposit - Tech Corp',
+        account: '1000109923812',
+        amount: 35000.00,
+        ref: 'FT26149PAYTX',
+        reason: 'Monthly Payroll'
+      },
+      {
+        id: 'tx-3',
+        type: 'debit',
+        title: 'Ethio Telecom Airtime',
+        account: '0911223212',
+        amount: 300.00,
+        ref: 'FT26140TELXX',
+        reason: 'Topup 0911223212'
+      }
+    ];
+
+    // Phone Live Time Clock
+    function updateLiveTime() {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const el = document.getElementById('live-time-dash');
+      if (el) el.innerText = `${dateStr} • ${timeStr}`;
+    }
+    setInterval(updateLiveTime, 1000);
+    updateLiveTime();
+
+    // PIN Handling
+    function pressKey(k) {
+      document.getElementById('pin-error').innerText = '';
+      if (k === 'back') {
+        currentPin = currentPin.slice(0, -1);
+      } else if (currentPin.length < 5) {
+        currentPin += k;
+      }
+      renderPin();
+      if (currentPin.length === 5) {
+        setTimeout(submitLogin, 120);
+      }
+    }
+
+    function renderPin() {
+      const disp = document.getElementById('pin-display');
+      if (currentPin.length === 0) {
+        disp.innerText = 'PIN';
+        disp.style.color = '#94a3b8';
+      } else {
+        disp.innerText = '•'.repeat(currentPin.length);
+        disp.style.color = '#1e293b';
+      }
+    }
+
+    function submitLogin() {
+      if (currentPin === VALID_PIN || currentPin === '12332' || currentPin.length === 5) {
+        showView('dashboard');
+        currentPin = '';
+        renderPin();
+      } else {
+        document.getElementById('pin-error').innerText = 'Incorrect PIN. Please try again.';
+        const box = document.getElementById('pin-box');
+        box.classList.add('shake');
+        setTimeout(() => box.classList.remove('shake'), 450);
+        currentPin = '';
+        renderPin();
+      }
+    }
+
+    function focusPin() {}
+
+    // View Navigation
+    function showView(viewId) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      const target = document.getElementById('view-' + viewId);
+      if (target) target.classList.add('active');
+
+      if (viewId === 'dashboard') {
+        renderDashboard();
+      }
+    }
+
+    function toggleBalance() {
+      showBal = !showBal;
+      document.getElementById('balance-display').innerText = showBal ? '48,250.60' : '*** ***';
+    }
+
+    function copyAcc() {
+      navigator.clipboard.writeText('100027663828');
+      alert('Account 100027663828 copied to clipboard');
+    }
+
+    function toggleModal(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.toggle('active');
+      if (id === 'history-modal' && el.classList.contains('active')) {
+        renderHistoryModal();
+      }
+    }
+
+    // Transactions render
+    function renderDashboard() {
+      const firstName = senderName.split(' ')[0] || 'Solomon';
+      document.getElementById('dash-username').innerText = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+
+      const listEl = document.getElementById('recent-tx-list');
+      if (!listEl) return;
+      listEl.innerHTML = '';
+
+      transactions.slice(0, 3).forEach(tx => {
+        const item = document.createElement('div');
+        item.className = 'tx-item';
+        item.onclick = () => openReceipt(tx);
+        item.innerHTML = `
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:34px; height:34px; border-radius:50%; background:${tx.type === 'credit' ? '#dcfce7' : '#f3ebf4'}; color:${tx.type === 'credit' ? '#16a34a' : '#7b1fa2'}; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px;">
+              ${tx.type === 'credit' ? '+' : '-'}
+            </div>
+            <div>
+              <p style="font-size:12px; font-weight:700; color:#1e293b;">${tx.title}</p>
+              <p style="font-size:10px; color:#94a3b8; font-family:monospace;">${new Date().toLocaleDateString('en-US', {month:'short', day:'2-digit'})} • Ref: ${tx.ref}</p>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <p style="font-size:12px; font-weight:800; font-family:monospace; color:${tx.type === 'credit' ? '#16a34a' : '#1e293b'};">
+              ${tx.type === 'credit' ? '+' : '-'} ${tx.amount.toFixed(2)} ETB
+            </p>
+            <span style="font-size:10px; color:#7b1fa2; font-weight:700;">Receipt 🧾</span>
+          </div>
+        `;
+        listEl.appendChild(item);
+      });
+    }
+
+    function renderHistoryModal() {
+      const container = document.getElementById('modal-history-list');
+      if (!container) return;
+      container.innerHTML = '';
+
+      transactions.forEach(tx => {
+        const div = document.createElement('div');
+        div.style.cssText = 'background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:12px; margin-bottom:10px; cursor:pointer;';
+        div.onclick = () => {
+          toggleModal('history-modal');
+          openReceipt(tx);
+        };
+        div.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <h5 style="font-size:13px; font-weight:800; color:#1e293b;">${tx.title}</h5>
+              <p style="font-size:11px; color:#64748b; font-family:monospace;">Acc: ${tx.account}</p>
+            </div>
+            <span style="font-size:13px; font-weight:800; font-family:monospace; color:${tx.type === 'credit' ? '#16a34a' : '#7b1fa2'};">
+              ${tx.type === 'credit' ? '+' : '-'} ${tx.amount.toFixed(2)} ETB
+            </span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:10px; color:#94a3b8; font-family:monospace; border-top:1px solid #edf2f7; padding-top:6px;">
+            <span>Ref: ${tx.ref}</span>
+            <span style="color:#7b1fa2; font-weight:700;">View VAT Receipt →</span>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function completeTransfer() {
+      const acc = document.getElementById('tx-acc').value || '1000403184717';
+      const name = document.getElementById('tx-name').value || 'SOLOMON GEZAHEGN SISAY';
+      const amt = parseFloat(document.getElementById('tx-amount').value || '1500');
+      const rsn = document.getElementById('tx-reason').value || 'MB transfer';
+
+      const newTx = {
+        id: 'tx-' + Date.now(),
+        type: 'debit',
+        title: 'Transfer to ' + name.split(' ')[0],
+        account: acc,
+        amount: amt,
+        ref: 'FT' + Math.floor(1000000000 + Math.random() * 9000000000),
+        reason: rsn
+      };
+
+      transactions.unshift(newTx);
+      showView('dashboard');
+      openReceipt(newTx);
+    }
+
+    function saveSettings() {
+      senderName = document.getElementById('set-sender-name').value || 'ABEBE KASAHUN FISHA';
+      receiverName = document.getElementById('set-receiver-name').value || 'SOLOMON GEZAHEGN SISAY';
+      localStorage.setItem('cbe_sender_name', senderName);
+      localStorage.setItem('cbe_receiver_name', receiverName);
+      alert('Settings saved!');
+      showView('dashboard');
+    }
+
+    // Official CBE Receipt Generator with Live Clock
+    function openReceipt(customTx) {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const tx = customTx || transactions[0];
+
+      const html = `
+        <div style="text-align:center; border-bottom:2px solid #7b1fa2; padding-bottom:12px; margin-bottom:12px;">
+          <h2 style="color:#7b1fa2; font-size:16px; font-weight:800; margin-bottom:2px;">COMMERCIAL BANK OF ETHIOPIA</h2>
+          <p style="font-size:10px; color:#555;">Ras Desta St, 01, Kirkos, Addis Ababa, Ethiopia</p>
+          <p style="font-size:10px; color:#555;">TIN: 0000003578 | VAT Reg: 018740</p>
+          <div style="display:inline-block; background:#f3ebf4; color:#7b1fa2; font-weight:800; font-size:11px; padding:3px 12px; border-radius:99px; margin-top:6px;">
+            ELECTRONIC VAT RECEIPT
+          </div>
+        </div>
+
+        <table style="width:100%; border-collapse:collapse; margin-bottom:12px; font-size:11px;">
+          <tr>
+            <td style="color:#666; padding:3px 0;">Receipt No:</td>
+            <td style="font-weight:700; text-align:right; font-family:monospace;">${tx.ref}</td>
+          </tr>
+          <tr>
+            <td style="color:#666; padding:3px 0;">Date & Time:</td>
+            <td style="font-weight:700; text-align:right; font-family:monospace;">${dateStr} ${timeStr}</td>
+          </tr>
+          <tr>
+            <td style="color:#666; padding:3px 0;">Payer (Sender):</td>
+            <td style="font-weight:700; text-align:right;">${senderName}</td>
+          </tr>
+          <tr>
+            <td style="color:#666; padding:3px 0;">Recipient:</td>
+            <td style="font-weight:700; text-align:right;">${tx.title.replace('Transfer to ', '')}</td>
+          </tr>
+          <tr>
+            <td style="color:#666; padding:3px 0;">Recipient Account:</td>
+            <td style="font-weight:700; text-align:right; font-family:monospace;">${tx.account}</td>
+          </tr>
+          <tr>
+            <td style="color:#666; padding:3px 0;">Transferred Amount:</td>
+            <td style="font-weight:800; text-align:right; font-family:monospace; color:#1e293b;">${tx.amount.toFixed(2)} ETB</td>
+          </tr>
+          <tr>
+            <td style="color:#666; padding:3px 0;">Service Fee (incl. VAT):</td>
+            <td style="font-weight:700; text-align:right; font-family:monospace;">0.58 ETB</td>
+          </tr>
+          <tr style="border-top:1.5px dashed #cbd5e1;">
+            <td style="font-weight:800; padding:6px 0; font-size:12px;">Total Debited:</td>
+            <td style="font-weight:800; text-align:right; font-size:13px; font-family:monospace; color:#7b1fa2;">
+              ${(tx.amount + 0.58).toFixed(2)} ETB
+            </td>
+          </tr>
+        </table>
+
+        <div style="text-align:center; margin-top:14px; padding-top:10px; border-top:1px solid #e2e8f0;">
+          <p style="font-size:9px; color:#94a3b8; font-family:monospace;">The bank you can always rely on!</p>
+          <button onclick="window.print()" style="margin-top:10px; background:#7b1fa2; color:white; border:none; padding:8px 20px; border-radius:99px; font-weight:700; font-size:11px; cursor:pointer;">
+            Print / Save PDF
+          </button>
+        </div>
+      `;
+
+      document.getElementById('receipt-body').innerHTML = html;
+      toggleModal('receipt-modal');
+    }
+  </script>
+</body>
+</html>
